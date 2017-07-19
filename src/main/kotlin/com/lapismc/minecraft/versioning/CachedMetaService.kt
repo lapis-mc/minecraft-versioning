@@ -20,10 +20,8 @@ class CachedMetaService(private val service: MetaService) : MetaService {
         if(manifest == null) {
             manifest = service.getVersionManifest()
             cachedManifest = manifest
-            return manifest
-        } else {
-            return manifest
         }
+        return manifest
     }
 
     /**
@@ -32,14 +30,12 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      * @return Complete version information referenced by the stub.
      */
     override fun getVersion(stub: VersionStub): Version {
-        var version = versionCache.get(stub.id)
+        var version = versionCache[stub.id]
         if(version == null) {
             version = service.getVersion(stub)
             versionCache.put(stub.id, version)
-            return version
-        } else {
-            return version
         }
+        return version
     }
 
     /**
@@ -48,14 +44,12 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      * @return List of assets corresponding to the specified index.
      */
     override fun getAssetList(index: AssetIndex): AssetList {
-        var assetList = assetListCache.get(index.resource.name)
+        var assetList = assetListCache[index.resource.name]
         if(assetList == null) {
             assetList = service.getAssetList(index)
             assetListCache.put(index.resource.name, assetList)
-            return assetList
-        } else {
-            return assetList
         }
+        return assetList
     }
 
     /**
