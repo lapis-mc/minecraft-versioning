@@ -42,7 +42,7 @@ class Version(val assetIndex: AssetIndex, val downloads: List<Resource>,
          * @return Constructed version information.
          */
         fun build(): Version {
-            return Version(assetIndex, downloads, libraries, launcher)
+            return Version(assetIndex, downloads.toList(), libraries.toList(), launcher)
         }
     }
 }
