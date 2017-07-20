@@ -9,7 +9,7 @@ package com.lapismc.minecraft.versioning
  * @param rules Rules to check whether the library should be included.
  */
 class Library(val gav: GroupArtifactVersionId, val artifacts: List<Artifact>,
-              val exclusions: List<String>, val rules: List<Rule>) {
+              val exclusions: List<String>, val rules: List<Rule>, val natives: Map<OSType, String>) {
     /**
      * Helps construct a library.
      * @param gav Maven information for the downloadable artifacts.
@@ -18,6 +18,7 @@ class Library(val gav: GroupArtifactVersionId, val artifacts: List<Artifact>,
         private val artifacts  = ArrayList<Artifact>()
         private val exclusions = ArrayList<String>()
         private val rules      = ArrayList<Rule>()
+        private val natives    = HashMap<OSType, String>()
 
         /**
          * Adds an artifact that is part of the library.
@@ -50,12 +51,23 @@ class Library(val gav: GroupArtifactVersionId, val artifacts: List<Artifact>,
         }
 
         /**
+         * Specifies that an artifact is a native for an OS.
+         * @param os Operating system the native is for.
+         * @param artifactId Name of the native artifact.
+         * @return Builder for chaining methods.
+         */
+        fun specifyNative(os: OSType, artifactId: String): Builder {
+            natives[os] = artifactId
+            return this
+        }
+
+        /**
          * Creates the library.
          * @return Constructed library information.
          */
         fun build(): Library {
             return Library(gav, artifacts.toList(),
-                    exclusions.toList(), rules.toList())
+                    exclusions.toList(), rules.toList(), natives.toMap())
         }
     }
 }
