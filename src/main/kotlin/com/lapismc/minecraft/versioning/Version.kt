@@ -37,6 +37,14 @@ class Version(stub: VersionStub, val assetIndex: AssetIndex, val downloads: List
     val url = stub.url
 
     /**
+     * Creates a string representation of the version.
+     * @return Version and type as a string.
+     */
+    override fun toString(): String {
+        return "Version($id $type)"
+    }
+
+    /**
      * Constructs information for a single version of the game.
      * @param assetIndex Summary of assets needed for the game and where to find them.
      * @param launcher Information needed for the launcher to start the game.

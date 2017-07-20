@@ -11,4 +11,13 @@ class OSRule(val os: OSType, allowed: Boolean) : Rule(allowed) {
      * @return True if the rule should be considered, false otherwise.
      */
     override fun isApplicable(): Boolean = OSType.current == os
+
+    /**
+     * Creates a string representation of the rule.
+     * @return Rule as a string.
+     */
+    override fun toString(): String {
+        val allowedStr = if(allowed) "Allowed" else "Denied"
+        return "Rule($allowedStr on $os)"
+    }
 }

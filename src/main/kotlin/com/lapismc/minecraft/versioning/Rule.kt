@@ -10,4 +10,13 @@ open class Rule(val allowed: Boolean) {
      * @return True if the rule should be considered, false otherwise.
      */
     open fun isApplicable() = true
+
+    /**
+     * Creates a string representation of the rule.
+     * @return Rule as a string.
+     */
+    override fun toString(): String {
+        val allowedStr = if(allowed) "Allowed" else "Denied"
+        return "Rule($allowedStr)"
+    }
 }
