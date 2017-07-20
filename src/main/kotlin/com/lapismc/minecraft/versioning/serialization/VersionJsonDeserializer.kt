@@ -217,7 +217,7 @@ class VersionJsonDeserializer(private val versionUrl: String) : ResponseDeserial
         if(element.has("natives"))
             readLibraryNativesBlock(element["natives"], builder)
         if(element.has("rules"))
-            deserializer.context.deserialize<List<Rule>>(element["rules"])
+            deserializer.context.deserialize<List<Rule>>(element["rules"]).forEach { builder.addRule(it) }
         if(element.has("downloads"))
             readLibraryDownloadsBlock(element["downloads"], builder)
         return builder.build()
