@@ -24,5 +24,19 @@ enum class VersionType {
     /**
      * Really old versions of the game when it was in early development.
      */
-    ALPHA
+    ALPHA;
+
+    /**
+     * Converts a string provided by a meta-service
+     * to an element in the enum.
+     * @param str Version type represented as a string.
+     * @return Enumeration element corresponding to the string.
+     */
+    fun fromString(str: String) = when(str.toLowerCase()) {
+        "release"   -> RELEASE
+        "snapshot"  -> SNAPSHOT
+        "old_beta"  -> BETA
+        "old_alpha" -> ALPHA
+        else        -> TODO("Don't know how to handle unknown version string")
+    }
 }
