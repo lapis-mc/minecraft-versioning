@@ -1,6 +1,6 @@
 package com.lapismc.minecraft.versioning
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 /**
  * Brief information about a version of the game.
@@ -13,4 +13,4 @@ import java.time.LocalDateTime
  * @param url Location of where to get additional information for the version.
  */
 data class VersionStub(val id: String, val type: VersionType,
-                       val updateTime: LocalDateTime, val releaseTime: LocalDateTime, val url: String)
+                       val updateTime: OffsetDateTime, val releaseTime: OffsetDateTime, val url: String)

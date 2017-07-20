@@ -8,7 +8,7 @@ import com.lapismc.minecraft.versioning.VersionManifest
 import com.lapismc.minecraft.versioning.VersionStub
 import com.lapismc.minecraft.versioning.VersionType
 import java.io.Reader
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 
 /**
@@ -111,8 +111,8 @@ class VersionManifestJsonDeserializer : ResponseDeserializable<VersionManifest> 
         val url            = element["url"].string
 
         val type        = VersionType.fromString(typeStr)
-        val updateTime  = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(updateTimeStr))
-        val releaseTime = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(releaseTimeStr))
+        val updateTime  = OffsetDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(updateTimeStr))
+        val releaseTime = OffsetDateTime.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(releaseTimeStr))
         return VersionStub(id, type, updateTime, releaseTime, url)
     }
 }
