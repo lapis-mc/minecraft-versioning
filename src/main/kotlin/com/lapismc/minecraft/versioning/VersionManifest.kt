@@ -30,17 +30,28 @@ class VersionManifest(val versions: List<VersionStub>, val latestReleaseId: Stri
         /**
          * Adds a version of the game to the manifest.
          * @param version Version to add.
-         * @param latest Indicates whether this is the latest version of its type (snapshot or release).
          * @return Builder for chaining methods.
          */
-        fun addVersion(version: VersionStub, latest: Boolean = false): Builder {
+        fun addVersion(version: VersionStub): Builder {
             versions.add(version)
-            if(latest) {
-                when(version.type) {
-                    VersionType.RELEASE  -> latestReleaseId  = version.id
-                    VersionType.SNAPSHOT -> latestSnapshotId = version.id
-                }
-            }
+            return this
+        }
+
+        /**
+         * Defines which release version is the latest.
+         * @param id Name of the latest release version.
+         */
+        fun latestRelease(id: String): Builder {
+            latestReleaseId = id
+            return this
+        }
+
+        /**
+         * Defines which snapshot version is the latest.
+         * @param id Name of the latest snapshot version.
+         */
+        fun latestSnapshot(id: String): Builder {
+            latestSnapshotId = id
             return this
         }
 
