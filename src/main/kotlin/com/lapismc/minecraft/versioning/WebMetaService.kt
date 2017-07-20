@@ -1,5 +1,8 @@
 package com.lapismc.minecraft.versioning
 
+import com.github.kittinunf.fuel.Fuel
+import com.lapismc.minecraft.versioning.serialization.VersionManifestJsonDeserializer
+
 /**
  * Web-based meta-service.
  * Retrieves version information from the web.
@@ -19,7 +22,14 @@ class WebMetaService(private val manifestUrl: String) : MetaService {
      * Retrieves summarized information about all available versions.
      * @return Top-level version information.
      */
-    override fun getVersionManifest(): VersionManifest = TODO()
+    override fun getVersionManifest(): VersionManifest {
+        val (_, _, result) = Fuel.get(manifestUrl).responseObject(VersionManifestJsonDeserializer())
+        result.fold(success = {
+            return result.get()
+        }, failure = {
+            TODO()
+        })
+    }
 
     /**
      * Retrieves additional information for a version.

@@ -4,17 +4,22 @@ import com.github.kittinunf.fuel.core.ResponseDeserializable
 import com.github.salomonbrys.kotson.*
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
-import com.google.gson.stream.JsonReader
 import com.lapismc.minecraft.versioning.VersionManifest
 import com.lapismc.minecraft.versioning.VersionStub
 import com.lapismc.minecraft.versioning.VersionType
 import java.io.Reader
-import java.util.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
- * Created by michael on 7/19/17.
+ * Pulls version manifest information from a JSON document.
  */
 class VersionManifestJsonDeserializer : ResponseDeserializable<VersionManifest> {
+    /**
+     * Read manifest information.
+     * @param reader JSON reader used to get manifest data.
+     * @return Constructed version manifest.
+     */
     override fun deserialize(reader: Reader): VersionManifest? {
         val gson = GsonBuilder()
                 .registerTypeAdapter<VersionManifest> {
@@ -29,6 +34,11 @@ class VersionManifestJsonDeserializer : ResponseDeserializable<VersionManifest> 
         return gson.fromJson<VersionManifest>(reader)
     }
 
+    /**
+     * Processes the top-level elements of the version manifest document.
+     * @param deserializer Deserialization information.
+     * @return Parsed version manifest.
+     */
     private fun readManifestDocument(deserializer: DeserializerArg): VersionManifest {
         /**
          * Version manifest documents look like this:
@@ -42,10 +52,45 @@ class VersionManifestJsonDeserializer : ResponseDeserializable<VersionManifest> 
         if(root.has("latest"))
             readLatestBlock(root["latest"], builder)
         if(root.has("versions"))
-            readVersionsBlock(deserializer, builder)
+            readVersionsBlock(root["versions"], deserializer.context, builder)
         return builder.build()
     }
 
+    /**
+     * Processes the latest versions block in the version manifest document.
+     * @param element JSON element referring to the latest block.
+     * @param builder Version manifest builder to report information to.
+     */
+    private fun readLatestBlock(element: JsonElement, builder: VersionManifest.Builder) {
+        /**
+         * Latest block looks like this:
+         * {
+         *   "snapshot": "1.12-pre7",
+         *   "release": "1.11.2"
+         * }
+         */
+        val latestReleaseId  = element["release"].string
+        val latestSnapshotId = element["snapshot"].string
+        builder.latestRelease(latestReleaseId)
+        builder.latestSnapshot(latestSnapshotId)
+    }
+
+    /**
+     * Processes the versions block in the version manifest document.
+     * @param element JSON element referring to the versions block.
+     * @param context Gson context for the deserializer.
+     * @param builder Version manifest builder to report information to.
+     */
+    private fun readVersionsBlock(element: JsonElement, context: DeserializerArg.Context, builder: VersionManifest.Builder) {
+        val stubs = context.deserialize<List<VersionStub>>(element)
+        stubs.forEach { builder.addVersion(it) }
+    }
+
+    /**
+     * Processes a version stub block in the version manifest document.
+     * @param deserializer Deserialization information.
+     * @return Parsed version stub.
+     */
     private fun readVersionStub(deserializer: DeserializerArg): VersionStub {
         /**
          * Version stub block looks like this:
@@ -65,14 +110,9 @@ class VersionManifestJsonDeserializer : ResponseDeserializable<VersionManifest> 
         val releaseTimeStr = element["releaseTime"].string
         val url            = element["url"].string
 
-        val type = VersionType.fromString(typeStr)
-        val updateTimeStr = LocalDateTime
-        return VersionStub("foo", VersionType.RELEASE, Date(), Date(), "foo")
-    }
-
-    private fun readVersionsBlock(deserializer: DeserializerArg, builder: VersionManifest.Builder) {
-        val element = deserializer.json
-        val stubs   = deserializer.context.deserialize<List<VersionStub>>(element)
-        stubs.forEach { builder.addVersion(it) }
+        val type        = VersionType.fromString(typeStr)
+        val updateTime  = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(updateTimeStr))
+        val releaseTime = LocalDateTime.from(DateTimeFormatter.ISO_DATE_TIME.parse(releaseTimeStr))
+        return VersionStub(id, type, updateTime, releaseTime, url)
     }
 }
