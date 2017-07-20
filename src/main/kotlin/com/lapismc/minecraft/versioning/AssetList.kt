@@ -12,7 +12,7 @@ data class AssetList(val objects: List<Asset>, val legacy: Boolean = false) {
      * Constructs a list of assets.
      * @param legacy Indicates whether the legacy asset system should be used.
      */
-    class Builder(val legacy: Boolean = false) {
+    class Builder(private val legacy: Boolean = false) {
         private val objects = ArrayList<Asset>()
 
         /**
