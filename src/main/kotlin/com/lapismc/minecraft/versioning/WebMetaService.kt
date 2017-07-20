@@ -37,7 +37,7 @@ class WebMetaService(private val manifestUrl: String) : MetaService {
      * @return Complete version information referenced by the stub.
      */
     override fun getVersion(stub: VersionStub): Version {
-        val (_, _, result) = Fuel.get(stub.url).responseObject(VersionJsonDeserializer())
+        val (_, _, result) = Fuel.get(stub.url).responseObject(VersionJsonDeserializer(stub.url))
         result.fold(success = {
             return result.get()
         }, failure = {
