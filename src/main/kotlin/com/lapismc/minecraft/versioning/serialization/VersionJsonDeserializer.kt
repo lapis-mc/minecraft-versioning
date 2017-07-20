@@ -145,16 +145,15 @@ class VersionJsonDeserializer(private val versionUrl: String) : ResponseDeserial
         return Resource(name, url, hash, size)
     }
 
+    /**
+     * Retrieves libraries from a version document.
+     * @param element JSON element referring to the libraries block.
+     * @param context Gson context for the deserializer.
+     * @param builder Version manifest builder to report information to.
+     */
     private fun readLibrariesBlock(element: JsonElement, context: DeserializerArg.Context, builder: Version.Builder) {
-        TODO()
-    }
-
-    private fun readLibraryDownloadsBlock(element: JsonElement, context: DeserializerArg.Context, builder: Version.Builder) {
-        TODO()
-    }
-
-    private fun readArtifactBlock(name: String, element: JsonElement, context: DeserializerArg.Context): Artifact {
-        TODO()
+        val libraries = context.deserialize<List<Library>>(element)
+        libraries.forEach { builder.addLibrary(it) }
     }
 
     /**
@@ -175,19 +174,170 @@ class VersionJsonDeserializer(private val versionUrl: String) : ResponseDeserial
          */
         val element   = deserializer.json.asJsonObject
         val name      = element["id"].string
-        val url       = element["url"].string
-        val hash      = element["sha1"].string
-        val size      = element["size"].int
         val totalSize = element["totalSize"].int
-        val resource  = Resource(name, url, hash, size)
+        val resource  = readResource(name, element)
         return AssetIndex(totalSize, resource)
     }
 
-    private fun readLibrary(deserializer: DeserializerArg): Library {
-        TODO()
+    /**
+     * Parses resource information from a JSON block.
+     * @param name Name of the resource.
+     * @param element Reference to the JSON object containing the resource information.
+     * @return Constructed resource.
+     */
+    private fun readResource(name: String, element: JsonObject): Resource {
+        val url  = element["url"].string
+        val hash = element["sha1"].string
+        val size = element["size"].int
+        return Resource(name, url, hash, size)
     }
 
+    /**
+     * Parses library information from JSON.
+     * @param deserializer Deserialization information.
+     * @return Constructed library.
+     */
+    private fun readLibrary(deserializer: DeserializerArg): Library {
+        /**
+         * Library block looks like this:
+         * {
+         *   "extract": { },
+         *   "name": "org.lwjgl.lwjgl:lwjgl-platform:2.9.0",
+         *   "natives": { },
+         *   "rules": [ ],
+         *   "downloads": { }
+         * }
+         */
+        val element = deserializer.json.asJsonObject
+        val name    = element["name"].string
+        val gav     = GroupArtifactVersionId.parse(name)
+        val builder = Library.Builder(gav)
+        if(element.has("extract"))
+            readLibraryExtractBlock(element["extract"], builder)
+        if(element.has("natives"))
+            readLibraryNativesBlock(element["natives"], builder)
+        if(element.has("rules"))
+            deserializer.context.deserialize<List<Rule>>(element["rules"])
+        if(element.has("downloads"))
+            readLibraryDownloadsBlock(element["downloads"], builder)
+        return builder.build()
+    }
+
+    /**
+     * Reads extraction information from a library extract block.
+     * @param element Reference to the JSON object containing the extract information.
+     * @param builder Library builder to report information to.
+     */
+    private fun readLibraryExtractBlock(element: JsonElement, builder: Library.Builder) {
+        /**
+         * Extract block looks like this:
+         * {
+         *   "exclude": [
+         *     "META-INF/"
+         *   ]
+         * }
+         */
+        val extractObject = element.asJsonObject
+        if(extractObject.has("exclude")) {
+            val excludeArray = extractObject["exclude"].asJsonArray
+            excludeArray.forEach { builder.excludePath(it.string) }
+        }
+    }
+
+    /**
+     * Reads native package information from a library native block.
+     * @param element Reference to JSON object containing the natives information.
+     * @param builder Library builder to report information to.
+     */
+    private fun readLibraryNativesBlock(element: JsonElement, builder: Library.Builder) {
+        /**
+         * Natives block looks like this:
+         * {
+         *   "linux": "natives-linux",
+         *   "osx": "natives-osx",
+         *   "windows": "natives-windows"
+         * }
+         */
+        val nativesObject = element.asJsonObject
+        nativesObject.entrySet().forEach {
+            val os = OSType.valueOf(it.key.toUpperCase())
+            builder.specifyNative(os, it.value.string)
+        }
+    }
+
+    /**
+     * Reads the downloads block from a library downloads block.
+     * @param element Reference to the JSON object containing the downloads information.
+     * @param builder Version manifest builder to report information to.
+     */
+    private fun readLibraryDownloadsBlock(element: JsonElement, builder: Library.Builder) {
+        /**
+         * Downloads block looks like this:
+         * {
+         *   "classifiers": {
+         *     "natives-linux": { },
+         *     "natives-osx": { },
+         *     "natives-windows": { },
+         *   },
+         *   "artifact": { }
+         * }
+         */
+        val downloadsObject = element.asJsonObject
+        if(downloadsObject.has("artifact"))
+            builder.addArtifact(readArtifactBlock("artifact", downloadsObject["artifact"]))
+        if(downloadsObject.has("classifiers")) {
+            val labeledArtifacts = downloadsObject["classifiers"].asJsonObject
+            labeledArtifacts.entrySet().forEach {
+                val artifact = readArtifactBlock(it.key, it.value)
+                builder.addArtifact(artifact)
+            }
+        }
+    }
+
+    /**
+     * Reads an artifact from a JSON object.
+     * @param name Name of the artifact.
+     * @param element JSON element referencing the artifact block.
+     * @return Constructed artifact from the information in the blcok.
+     */
+    private fun readArtifactBlock(name: String, element: JsonElement): Artifact {
+        /**
+         * Artifact block looks like this:
+         * {
+         *   "size": 65020,
+         *   "sha1": "419c05fe9be71f792b2d76cfc9b67f1ed0fec7f6",
+         *   "path": "com/paulscode/soundsystem/20120107/soundsystem-20120107.jar",
+         *   "url": "https://libraries.minecraft.net/com/paulscode/soundsystem/20120107/soundsystem-20120107.jar"
+         * }
+         */
+        val artifactObject = element.asJsonObject
+        val path     = artifactObject["path"].string
+        val resource = readResource(name, artifactObject)
+        return Artifact(path, resource)
+    }
+
+    /**
+     * Reads a rule from JSON.
+     * @param deserializer Deserialization information.
+     * @return Constructed rule.
+     */
     private fun readRule(deserializer: DeserializerArg): Rule {
-        TODO()
+        /**
+         * Rule block looks like this:
+         * {
+         *   "action": "allow",
+         *   "os": {
+         *     "name": "osx"
+         *   }
+         * }
+         */
+        val element = deserializer.json.asJsonObject
+        val allowed = element["action"].string == "allowed"
+        if(element.has("os")) {
+            val osName = element["os"]["name"].string
+            val os     = OSType.valueOf(osName.toUpperCase())
+            return OSRule(os, allowed)
+        }
+        return Rule(allowed)
     }
 }
