@@ -157,8 +157,30 @@ class VersionJsonDeserializer(private val versionUrl: String) : ResponseDeserial
         TODO()
     }
 
+    /**
+     * Parses asset index information from JSON.
+     * @param deserializer Deserialization information.
+     * @return Parsed asset index.
+     */
     private fun readAssetIndex(deserializer: DeserializerArg): AssetIndex {
-        TODO()
+        /**
+         * Asset index block looks like this:
+         * {
+         *   "id": "1.12",
+         *   "sha1": "67e29e024e664064c1f04c728604f83c24cbc218",
+         *   "size": 169014,
+         *   "url": "https://launchermeta.mojang.com/mc/assets/1.12/67e29e024e664064c1f04c728604f83c24cbc218/1.12.json",
+         *   "totalSize": 127037169
+         * }
+         */
+        val element   = deserializer.json.asJsonObject
+        val name      = element["id"].string
+        val url       = element["url"].string
+        val hash      = element["sha1"].string
+        val size      = element["size"].int
+        val totalSize = element["totalSize"].int
+        val resource  = Resource(name, url, hash, size)
+        return AssetIndex(totalSize, resource)
     }
 
     private fun readLibrary(deserializer: DeserializerArg): Library {
