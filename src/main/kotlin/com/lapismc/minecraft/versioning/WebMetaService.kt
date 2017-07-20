@@ -1,7 +1,7 @@
 package com.lapismc.minecraft.versioning
 
 import com.github.kittinunf.fuel.Fuel
-import com.lapismc.minecraft.versioning.serialization.VersionManifestJsonDeserializer
+import com.lapismc.minecraft.versioning.serialization.*
 
 /**
  * Web-based meta-service.
@@ -36,12 +36,26 @@ class WebMetaService(private val manifestUrl: String) : MetaService {
      * @param stub Version information from the manifest.
      * @return Complete version information referenced by the stub.
      */
-    override fun getVersion(stub: VersionStub): Version = TODO()
+    override fun getVersion(stub: VersionStub): Version {
+        val (_, _, result) = Fuel.get(stub.url).responseObject(VersionJsonDeserializer())
+        result.fold(success = {
+            return result.get()
+        }, failure = {
+            TODO()
+        })
+    }
 
     /**
      * Retrieves a list of assets needed for the game to run.
      * @param index Reference to the list of assets to retrieve.
      * @return List of assets corresponding to the specified index.
      */
-    override fun getAssetList(index: AssetIndex): AssetList = TODO()
+    override fun getAssetList(index: AssetIndex): AssetList {
+        val (_, _, result) = Fuel.get(index.resource.url).responseObject(AssetListJsonDeserializer())
+        result.fold(success = {
+            return result.get()
+        }, failure = {
+            TODO()
+        })
+    }
 }
