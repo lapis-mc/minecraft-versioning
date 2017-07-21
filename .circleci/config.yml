@@ -27,6 +27,12 @@ jobs:
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
       # Clean, build, and run checks.
-      - run: ./gradlew clean cleanTest
-      - run: ./gradlew assemble
-      - run: ./gradlew check
+      - run:
+          name: Clean
+          command: ./gradlew clean cleanTest
+      - run:
+          name: Compile
+          command: ./gradlew assemble
+      - run:
+          name: Test
+          command: ./gradlew check
