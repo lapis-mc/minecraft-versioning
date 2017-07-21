@@ -1,5 +1,5 @@
 group 'com.lapismc.minecraft'
-version '1.0.0'
+version '0.5.0'
 
 buildscript {
     ext {
@@ -53,5 +53,6 @@ bintray {
         githubRepo = 'lapis-mc/minecraft-versioning'
         vcsUrl     = 'https://github.com/lapis-mc/minecraft-versioning.git'
         licenses   = ['MIT']
+        publish    = true
     }
 }
