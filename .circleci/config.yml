@@ -36,3 +36,7 @@ jobs:
       - run:
           name: Test
           command: ./gradlew check
+
+      - store_artifacts:
+          path: build/libs
+          destination: libs/
