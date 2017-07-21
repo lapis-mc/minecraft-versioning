@@ -45,14 +45,16 @@ jobs:
           destination: libs/
 
       - persist_to_workspace:
-          root: build
+          root: ~/minecraft-versioning
+          paths:
+            - build
 
   deploy:
     <<: *defaults
     steps:
       - checkout
       - attach_workspace:
-          at: build
+          at: ~/minecraft-versioning
       - run:
           name: Upload
           command: ./gradlew bintrayUpload
