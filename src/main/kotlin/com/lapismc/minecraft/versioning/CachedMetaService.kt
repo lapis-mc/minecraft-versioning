@@ -1,6 +1,7 @@
 package com.lapismc.minecraft.versioning
 
 import com.github.kittinunf.result.Result
+import java.time.format.DateTimeFormatter
 
 /**
  * Provides cached access to a meta-service.
@@ -10,8 +11,10 @@ import com.github.kittinunf.result.Result
  */
 class CachedMetaService(private val service: MetaService) : MetaService {
     private var cachedManifest: VersionManifest? = null
-    private val versionCache   = HashMap<String, Version>()
-    private val assetListCache = HashMap<String, AssetList>()
+    private val versionCache       = HashMap<String, Version>()
+    private val assetListCache     = HashMap<String, AssetList>()
+    private val downloadCache      = HashMap<String, ByteArray>()
+    private var downloadCacheBytes = 0
 
     /**
      * Retrieves summarized information about all available versions.
@@ -49,7 +52,12 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      *  If the request was successful, then version information document referenced by the stub is returned.
      *  If the request failed, then the exception information is returned.
      */
-    override fun getVersionDocument(stub: VersionStub): Result<ByteArray, Exception> = TODO()
+    override fun getVersionDocument(stub: VersionStub): Result<ByteArray, Exception> {
+        val key = stub.id + ":" + stub.updateTime.format(DateTimeFormatter.ISO_DATE_TIME)
+        return cachedDownloadAccess(key, {
+            service.getVersionDocument(stub)
+        })
+    }
 
     /**
      * Retrieves a list of assets needed for the game to run.
@@ -71,7 +79,12 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      *  If the request was successful, then the asset list document corresponding to the specified index is returned.
      *  If the request failed, then the exception information is returned.
      */
-    override fun getAssetListDocument(index: AssetIndex): Result<ByteArray, Exception> = TODO()
+    override fun getAssetListDocument(index: AssetIndex): Result<ByteArray, Exception> {
+        val key = index.resource.hash
+        return cachedDownloadAccess(key, {
+            service.getAssetListDocument(index)
+        })
+    }
 
     /**
      * Retrieves the raw content of an asset.
@@ -81,7 +94,12 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      *  If the request was successful, then the asset content is returned.
      *  If the request failed, then the exception information is returned.
      */
-    override fun getAssetContent(asset: Asset): Result<ByteArray, Exception> = TODO()
+    override fun getAssetContent(asset: Asset): Result<ByteArray, Exception> {
+        val key = asset.hash
+        return cachedDownloadAccess(key, {
+            service.getAssetContent(asset)
+        })
+    }
 
     /**
      * Retrieves the raw content of an artifact from a library.
@@ -91,7 +109,12 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      *  If the request was successful, then the artifact content is returned.
      *  If the request failed, then the exception information is returned.
      */
-    override fun getArtifactContent(artifact: Artifact): Result<ByteArray, Exception> = TODO()
+    override fun getArtifactContent(artifact: Artifact): Result<ByteArray, Exception> {
+        val key = artifact.resource.hash
+        return cachedDownloadAccess(key, {
+            service.getArtifactContent(artifact)
+        })
+    }
 
     /**
      * Removes all cached data.
@@ -101,6 +124,8 @@ class CachedMetaService(private val service: MetaService) : MetaService {
         cachedManifest = null
         versionCache.clear()
         assetListCache.clear()
+        downloadCache.clear()
+        downloadCacheBytes = 0
     }
 
     /**
@@ -125,5 +150,20 @@ class CachedMetaService(private val service: MetaService) : MetaService {
                 map[key] = result.value
             result
         }
+    }
+
+    /**
+     * Utility method for giving access to the download cache.
+     * If the content is already in the cache, this method will return it.
+     * If not, then the [missing] block is called to retrieve the content.
+     * @param key Unique key used to address the content in the cache (content hash).
+     * @param missing Block to call to get the content when there's a cache miss.
+     *  The block is expected to return a result.
+     *  If the result is successful, then the content is stored in the cache.
+     * @return Result of retrieving content from the cache.
+     *  If the content is not in the cache and can't be retrieved, an error is returned.
+     */
+    private fun cachedDownloadAccess(key: String, missing: () -> Result<ByteArray, Exception>): Result<ByteArray, Exception> {
+        return cachedAccess(key, downloadCache, missing)
     }
 }
