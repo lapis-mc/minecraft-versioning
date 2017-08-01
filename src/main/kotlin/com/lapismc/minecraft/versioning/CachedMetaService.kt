@@ -11,10 +11,9 @@ import java.time.format.DateTimeFormatter
  */
 class CachedMetaService(private val service: MetaService) : MetaService {
     private var cachedManifest: VersionManifest? = null
-    private val versionCache       = HashMap<String, Version>()
-    private val assetListCache     = HashMap<String, AssetList>()
-    private val downloadCache      = HashMap<String, ByteArray>()
-    private var downloadCacheBytes = 0
+    private val versionCache   = HashMap<String, Version>()
+    private val assetListCache = HashMap<String, AssetList>()
+    private val downloadCache  = LRUCache<String, ByteArray>()
 
     /**
      * Retrieves summarized information about all available versions.
@@ -125,7 +124,6 @@ class CachedMetaService(private val service: MetaService) : MetaService {
         versionCache.clear()
         assetListCache.clear()
         downloadCache.clear()
-        downloadCacheBytes = 0
     }
 
     /**
@@ -165,5 +163,17 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      */
     private fun cachedDownloadAccess(key: String, missing: () -> Result<ByteArray, Exception>): Result<ByteArray, Exception> {
         return cachedAccess(key, downloadCache, missing)
+    }
+
+    /**
+     * LRU cache for holding byte arrays of content.
+     */
+    private class LRUCache<K, V>(private val maxSize: Int = 256) : LinkedHashMap<K, V>(maxSize * 4 / 3, 0.75f, true) {
+        /**
+         * Indicates whether the oldest entry should be removed.
+         * @param eldest Oldest entry.
+         * @return True if the size limit has been reached on the cache, false otherwise.
+         */
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>?) = size > maxSize
     }
 }
