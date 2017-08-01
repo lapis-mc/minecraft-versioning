@@ -1,5 +1,7 @@
 package com.lapismc.minecraft.versioning
 
+import com.github.kittinunf.result.Result
+
 /**
  * Provides cached access to a meta-service.
  * Repeat requests will be retrieved from cache
@@ -15,13 +17,16 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      * Retrieves summarized information about all available versions.
      * @return Top-level version information.
      */
-    override fun getVersionManifest(): VersionManifest {
-        var manifest = cachedManifest
-        if(manifest == null) {
-            manifest = service.getVersionManifest()
-            cachedManifest = manifest
+    override fun getVersionManifest(): Result<VersionManifest, Exception> {
+        val manifest = cachedManifest
+        return if(manifest != null)
+            Result.of(manifest)
+        else {
+            val result = service.getVersionManifest()
+            if(result is Result.Success)
+                cachedManifest = result.value
+            result
         }
-        return manifest
     }
 
     /**
@@ -29,13 +34,17 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      * @param stub Version information from the manifest.
      * @return Complete version information referenced by the stub.
      */
-    override fun getVersion(stub: VersionStub): Version {
-        var version = versionCache[stub.id]
-        if(version == null) {
-            version = service.getVersion(stub)
-            versionCache.put(stub.id, version)
+    override fun getVersion(stub: VersionStub): Result<Version, Exception> {
+        val key = stub.id
+        val version = versionCache[key]
+        return if(version != null)
+            Result.of(version)
+        else {
+            val result = service.getVersion(stub)
+            if(result is Result.Success)
+                versionCache[key] = result.value
+            result
         }
-        return version
     }
 
     /**
@@ -43,13 +52,17 @@ class CachedMetaService(private val service: MetaService) : MetaService {
      * @param index Reference to the list of assets to retrieve.
      * @return List of assets corresponding to the specified index.
      */
-    override fun getAssetList(index: AssetIndex): AssetList {
-        var assetList = assetListCache[index.resource.name]
-        if(assetList == null) {
-            assetList = service.getAssetList(index)
-            assetListCache.put(index.resource.name, assetList)
+    override fun getAssetList(index: AssetIndex): Result<AssetList, Exception> {
+        val key = index.resource.name
+        val assetList = assetListCache[key]
+        return if(assetList != null)
+            Result.of(assetList)
+        else {
+            val result = service.getAssetList(index)
+            if(result is Result.Success)
+                assetListCache[key] = result.value
+            result
         }
-        return assetList
     }
 
     /**
