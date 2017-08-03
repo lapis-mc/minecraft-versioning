@@ -10,14 +10,17 @@ class VersionManifest(val versions: List<VersionStub>, val latestReleaseId: Stri
     /**
      * Latest release version.
      */
-    val latestRelease: VersionStub?
-        get() = versions.find { it.id == latestReleaseId }
+    val latestRelease: VersionStub? = get(latestReleaseId)
 
     /**
      * Latest snapshot version.
      */
-    val latestSnapshot: VersionStub?
-        get() = versions.find { it.id == latestSnapshotId }
+    val latestSnapshot: VersionStub? = get(latestSnapshotId)
+
+    /**
+     * Retrieve a stub for a specified version
+     */
+    fun get(id: String) = versions.find { it.id == id }
 
     /**
      * Constructs a version manifest.
