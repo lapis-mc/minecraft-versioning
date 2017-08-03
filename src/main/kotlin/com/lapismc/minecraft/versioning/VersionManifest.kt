@@ -6,7 +6,13 @@ package com.lapismc.minecraft.versioning
  * @param latestReleaseId Name of the latest release version.
  * @param latestSnapshotId Name of the latest snapshot version.
  */
-class VersionManifest(val versions: List<VersionStub>, val latestReleaseId: String, val latestSnapshotId: String) {
+class VersionManifest(versions: Collection<VersionStub>, val latestReleaseId: String, val latestSnapshotId: String) {
+    private val versionMap = HashMap<String, VersionStub>(versions.size)
+
+    init {
+        versions.forEach { versionMap.put(it.id, it) }
+    }
+
     /**
      * Latest release version.
      */
@@ -18,9 +24,10 @@ class VersionManifest(val versions: List<VersionStub>, val latestReleaseId: Stri
     val latestSnapshot: VersionStub? = get(latestSnapshotId)
 
     /**
-     * Retrieve a stub for a specified version
+     * Retrieve a stub for a specified version.
+     * @param id Unique name of the version.
      */
-    fun get(id: String) = versions.find { it.id == id }
+    fun get(id: String) = versionMap[id]
 
     /**
      * Constructs a version manifest.
