@@ -6,7 +6,7 @@ package com.lapismc.minecraft.versioning
  * @param latestReleaseId Name of the latest release version.
  * @param latestSnapshotId Name of the latest snapshot version.
  */
-class VersionManifest(versions: Collection<VersionStub>, val latestReleaseId: String, val latestSnapshotId: String) {
+class VersionManifest(versions: Collection<VersionStub>, val latestReleaseId: String, val latestSnapshotId: String): Collection<VersionStub> {
     private val versionMap = HashMap<String, VersionStub>(versions.size)
 
     init {
@@ -28,6 +28,37 @@ class VersionManifest(versions: Collection<VersionStub>, val latestReleaseId: St
      * @param id Unique name of the version.
      */
     fun get(id: String) = versionMap[id]
+
+    /**
+     * Returns the size of the collection.
+     */
+    override val size = versionMap.size
+
+    /**
+     * Checks if the specified stub is contained in the manifest.
+     * @param element Stub to look for in the manifest.
+     * @return True if the stub exists in the manifest, or false if it doesn't.
+     */
+    override fun contains(element: VersionStub) = versionMap.containsValue(element)
+
+    /**
+     * Checks if all stubs in the specified collection are contained in the manifest.
+     * @param elements Set of stubs to look for in the manifest.
+     * @return True if all of the stubs exist in the manifest, or false if at least one doesn't.
+     */
+    override fun containsAll(elements: Collection<VersionStub>) = elements.all { versionMap.containsValue(it) }
+
+    /**
+     * Checks whether the manifest is empty.
+     * @return True if the manifest is empty (contains no versions), false otherwise.
+     */
+    override fun isEmpty() = versionMap.isEmpty()
+
+    /**
+     * Retrieves an iterator that can be used to iterate over all version stubs.
+     * @return Immutable iterator of version stubs.
+     */
+    override fun iterator(): Iterator<VersionStub> = versionMap.values.stream().iterator()
 
     /**
      * Constructs a version manifest.
