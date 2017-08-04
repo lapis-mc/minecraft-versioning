@@ -6,7 +6,37 @@ package com.lapismc.minecraft.versioning
  * @param legacy Indicates whether the legacy asset system should be used.
  *  Specify true for legacy asset system, and false for modern system.
  */
-data class AssetList(val objects: List<Asset>, val legacy: Boolean = false) {
+data class AssetList(private val objects: List<Asset>, val legacy: Boolean = false) : Collection<Asset> {
+    /**
+     * Returns the number of assets in the list.
+     */
+    override val size = objects.size
+
+    /**
+     * Checks if the specified asset is contained in this list.
+     * @param element Asset to look for.
+     * @return True if the asset is in the list, or false if it isn't.
+     */
+    override fun contains(element: Asset) = objects.contains(element)
+
+    /**
+     * Checks if all assets in the specified collection are contained in this list.
+     * @param elements Assets to look for.
+     * @return True if all of the assets were found in the list, or false if at least one wasn't.
+     */
+    override fun containsAll(elements: Collection<Asset>) = objects.containsAll(elements)
+
+    /**
+     * Checks whether the list is empty.
+     * @return True if the list is empty, or false if it has something in it.
+     */
+    override fun isEmpty() = objects.isEmpty()
+
+    /**
+     * Gets an iterator that can be used to iterate over all of the assets.
+     * @return Immutable iterator.
+     */
+    override fun iterator() = objects.stream().iterator()
 
     /**
      * Constructs a list of assets.
