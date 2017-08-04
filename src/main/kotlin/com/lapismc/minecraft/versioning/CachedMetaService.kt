@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter
 class CachedMetaService(private val service: MetaService) : MetaService {
     private var cachedManifest: VersionManifest? = null
     private val versionCache   = HashMap<String, Version>()
-    private val assetListCache = HashMap<String, AssetList>()
+    private val assetListCache = HashMap<String, AssetCollection>()
     private val downloadCache  = LRUCache<String, ByteArray>()
 
     /**
@@ -59,11 +59,11 @@ class CachedMetaService(private val service: MetaService) : MetaService {
     }
 
     /**
-     * Retrieves a list of assets needed for the game to run.
+     * Retrieves a set of assets needed for the game to run.
      * @param index Reference to the list of assets to retrieve.
      * @return List of assets corresponding to the specified index.
      */
-    override fun getAssetList(index: AssetIndex): Result<AssetList, Exception> {
+    override fun getAssetList(index: AssetIndex): Result<AssetCollection, Exception> {
         val key = index.resource.name
         return cachedAccess(key, assetListCache, {
             service.getAssetList(index)

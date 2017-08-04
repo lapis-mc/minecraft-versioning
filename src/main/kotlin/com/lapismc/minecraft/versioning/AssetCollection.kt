@@ -1,12 +1,12 @@
 package com.lapismc.minecraft.versioning
 
 /**
- * Collection of asset information needed to run the game.
+ * Set of asset information needed to run the game.
  * @param objects All of the assets needed to run the game.
  * @param legacy Indicates whether the legacy asset system should be used.
  *  Specify true for legacy asset system, and false for modern system.
  */
-data class AssetList(private val objects: List<Asset>, val legacy: Boolean = false) : Collection<Asset> {
+data class AssetCollection(private val objects: Collection<Asset>, val legacy: Boolean = false) : Collection<Asset> {
     /**
      * Returns the number of assets in the list.
      */
@@ -59,8 +59,8 @@ data class AssetList(private val objects: List<Asset>, val legacy: Boolean = fal
          * Creates the asset list with all the previously provided information.
          * @return Constructed asset list.
          */
-        fun build(): AssetList {
-            return AssetList(objects.toList(), legacy)
+        fun build(): AssetCollection {
+            return AssetCollection(objects.toList(), legacy)
         }
     }
 }

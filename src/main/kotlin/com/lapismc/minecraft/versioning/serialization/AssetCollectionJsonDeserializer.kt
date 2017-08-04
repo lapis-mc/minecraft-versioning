@@ -5,26 +5,26 @@ import com.github.salomonbrys.kotson.*
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.lapismc.minecraft.versioning.Asset
-import com.lapismc.minecraft.versioning.AssetList
+import com.lapismc.minecraft.versioning.AssetCollection
 import java.io.Reader
 
 /**
  * Pulls asset list information from a JSON document.
  */
-class AssetListJsonDeserializer : ResponseDeserializable<AssetList> {
+class AssetCollectionJsonDeserializer : ResponseDeserializable<AssetCollection> {
     /**
      * Read asset list information.
      * @param reader JSON reader used to get asset list data.
      * @return Constructed asset list.
      */
-    override fun deserialize(reader: Reader): AssetList? {
+    override fun deserialize(reader: Reader): AssetCollection? {
         val gson = GsonBuilder()
-                .registerTypeAdapter<AssetList> {
+                .registerTypeAdapter<AssetCollection> {
                     deserialize { readAssetList(it) }
                     serialize { jsonNull } // Empty, unused serializer to make Kotson happy.
                 }
                 .create()
-        return gson.fromJson<AssetList>(reader)
+        return gson.fromJson<AssetCollection>(reader)
     }
 
     /**
@@ -32,10 +32,10 @@ class AssetListJsonDeserializer : ResponseDeserializable<AssetList> {
      * @param deserializer Deserialization information.
      * @return Constructed asset list.
      */
-    private fun readAssetList(deserializer: DeserializerArg): AssetList {
+    private fun readAssetList(deserializer: DeserializerArg): AssetCollection {
         val root    = deserializer.json.asJsonObject
         val legacy  = root.has("legacy") && root["legacy"].bool
-        val builder = AssetList.Builder(legacy)
+        val builder = AssetCollection.Builder(legacy)
         if(root.has("objects")) {
             val objects = root["objects"].asJsonObject
             objects.entrySet().forEach {

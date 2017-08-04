@@ -59,14 +59,14 @@ class WebMetaService(private val manifestUrl: String, private val resourceUrl: S
     }
 
     /**
-     * Retrieves a list of assets needed for the game to run.
+     * Retrieves a set of assets needed for the game to run.
      * @param index Reference to the list of assets to retrieve.
      * @return Result of the request.
      *  If the request was successful, then a list of assets corresponding to the specified index is returned.
      *  If the request failed, then the exception information is returned.
      */
-    override fun getAssetList(index: AssetIndex): Result<AssetList, Exception> {
-        val (_, _, result) = Fuel.get(index.resource.url).responseObject(AssetListJsonDeserializer())
+    override fun getAssetList(index: AssetIndex): Result<AssetCollection, Exception> {
+        val (_, _, result) = Fuel.get(index.resource.url).responseObject(AssetCollectionJsonDeserializer())
         return result
     }
 
