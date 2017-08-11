@@ -328,15 +328,22 @@ class VersionJsonDeserializer(private val versionUrl: String) : ResponseDeserial
          *   "action": "allow",
          *   "os": {
          *     "name": "osx"
+         *     "version": "^10\\.5\\.\\d$"
          *   }
          * }
          */
         val element = deserializer.json.asJsonObject
         val allowed = element["action"].string == "allowed"
         if(element.has("os")) {
-            val osName = element["os"]["name"].string
-            val os     = OSType.valueOf(osName.toUpperCase())
-            return OSRule(os, allowed)
+            val osObj  = element["os"].obj
+            val osName = osObj["name"].string
+            val osType = OSType.valueOf(osName.toUpperCase())
+            return if(osObj.has("version")) {
+                val versionRegex = osObj["version"].string
+                OSRule(osType, Regex(versionRegex), allowed)
+            } else {
+                OSRule(osType, allowed)
+            }
         }
         return Rule(allowed)
     }
