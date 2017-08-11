@@ -349,7 +349,7 @@ class VersionJsonDeserializer(private val versionUrl: String) : ResponseDeserial
          *   "version": "^10\\.5\\.\\d$"
          * }
          */
-        val osObj  = element["os"].obj
+        val osObj  = element.obj
         val osName = osObj["name"].string
         val osType = OSType.valueOf(osName.toUpperCase())
         // Version field is optional.
