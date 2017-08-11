@@ -329,7 +329,7 @@ class VersionJsonDeserializer(private val versionUrl: String) : ResponseDeserial
          * }
          */
         val element = deserializer.json.asJsonObject
-        val allowed = element["action"].string == "allowed"
+        val allowed = element["action"].string == "allow"
         if(element.has("os"))
             return readOSRule(element["os"], allowed)
         return Rule(allowed)
