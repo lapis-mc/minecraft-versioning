@@ -36,7 +36,7 @@ data class AssetCollection(private val objects: Collection<Asset>, val legacy: B
      * Gets an iterator that can be used to iterate over all of the assets.
      * @return Immutable iterator.
      */
-    override fun iterator() = objects.stream().iterator()
+    override fun iterator(): Iterator<Asset> = objects.stream().iterator()
 
     /**
      * Constructs a list of assets.
