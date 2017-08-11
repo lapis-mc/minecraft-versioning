@@ -1,5 +1,7 @@
 package com.lapismc.minecraft.versioning
 
+import kotlin.coroutines.experimental.buildSequence
+
 /**
  * Package required for the game to run
  * and additional information regarding extraction and inclusion rules.
@@ -22,15 +24,13 @@ class Library(val gav: GroupArtifactVersionId, val artifacts: List<Artifact>,
      * Gets the list of artifacts applicable to the current platform.
      * @return Set of artifacts needed for the current OS.
      */
-    fun getApplicableArtifacts(): List<Artifact> {
-        val artifacts =  ArrayList<Artifact>(2)
+    fun getApplicableArtifacts() = buildSequence<Artifact> {
         val common = commonArtifact
         if(common != null)
-            artifacts.add(common)
+            yield(common)
         val native = nativeArtifact
         if(native != null)
-            artifacts.add(native)
-        return artifacts.toList()
+            yield(native)
     }
 
     /**
