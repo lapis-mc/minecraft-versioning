@@ -19,6 +19,44 @@ class Library(val gav: GroupArtifactVersionId, val artifacts: List<Artifact>,
     }
 
     /**
+     * Gets the list of artifacts applicable to the current platform.
+     * @return Set of artifacts needed for the current OS.
+     */
+    fun getApplicableArtifacts(): List<Artifact> {
+        val artifacts =  ArrayList<Artifact>(2)
+        val common = commonArtifact
+        if(common != null)
+            artifacts.add(common)
+        val native = nativeArtifact
+        if(native != null)
+            artifacts.add(native)
+        return artifacts.toList()
+    }
+
+    /**
+     * Artifact used on all platforms needed by the library.
+     * @return Non-native artifact.
+     *   If null, then there is no non-native artifact for this library.
+     */
+    val commonArtifact: Artifact?
+        get() = artifacts.find { it.resource.name == "artifact" }
+
+    /**
+     * Artifact used on specific platforms needed by the library.
+     * @return Native artifact.
+     *   If null, then there is no native artifact for this library.
+     */
+    val nativeArtifact: Artifact?
+        get() {
+            return if(natives.containsKey(OSType.current)) {
+                val nativeKey = natives[OSType.current]
+                artifacts.find { it.resource.name == nativeKey }
+            } else {
+                null
+            }
+        }
+
+    /**
      * Helps construct a library.
      * @param gav Maven information for the downloadable artifacts.
      */
