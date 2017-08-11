@@ -37,6 +37,12 @@ class Version(stub: VersionStub, val assetIndex: AssetIndex, val downloads: List
     val url = stub.url
 
     /**
+     * Retrieves a list of libraries needed to run the game on the current system.
+     * @return List of required libraries.
+     */
+    fun getApplicableLibraries() = libraries.filter { it.isApplicable() }
+
+    /**
      * Creates a string representation of the version.
      * @return Version and type as a string.
      */

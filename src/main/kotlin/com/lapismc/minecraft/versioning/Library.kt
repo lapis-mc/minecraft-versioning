@@ -21,6 +21,18 @@ class Library(val gav: GroupArtifactVersionId, val artifacts: List<Artifact>,
     }
 
     /**
+     * Checks whether the library should be included for the current OS.
+     * @return True if the library is needed on the local OS,
+     *  or false if it can be skipped.
+     */
+    fun isApplicable(): Boolean {
+        val applicableRules = rules.filter { it.isApplicable() }
+        if(applicableRules.isEmpty())
+            return true
+        return applicableRules.all { it.allowed }
+    }
+
+    /**
      * Gets the list of artifacts applicable to the current platform.
      * @return Set of artifacts needed for the current OS.
      */
