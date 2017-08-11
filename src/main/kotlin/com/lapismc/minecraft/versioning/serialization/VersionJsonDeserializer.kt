@@ -325,26 +325,39 @@ class VersionJsonDeserializer(private val versionUrl: String) : ResponseDeserial
         /**
          * Rule block looks like this:
          * {
-         *   "action": "allow",
-         *   "os": {
-         *     "name": "osx"
-         *     "version": "^10\\.5\\.\\d$"
-         *   }
+         *   "action": "allow"
          * }
          */
         val element = deserializer.json.asJsonObject
         val allowed = element["action"].string == "allowed"
-        if(element.has("os")) {
-            val osObj  = element["os"].obj
-            val osName = osObj["name"].string
-            val osType = OSType.valueOf(osName.toUpperCase())
-            return if(osObj.has("version")) {
-                val versionRegex = osObj["version"].string
-                OSRule(osType, Regex(versionRegex), allowed)
-            } else {
-                OSRule(osType, allowed)
-            }
-        }
+        if(element.has("os"))
+            return readOSRule(element["os"], allowed)
         return Rule(allowed)
+    }
+
+    /**
+     * Reads an OS rule from JSON.
+     * @param element JSON element referencing the OS-specific rule block.
+     * @param allowed Flag indicating whether the rule is applicable.
+     * @return Constructed OS rule.
+     */
+    private fun readOSRule(element: JsonElement, allowed: Boolean): OSRule {
+        /**
+         * OS block looks like this:
+         * {
+         *   "name": "osx"
+         *   "version": "^10\\.5\\.\\d$"
+         * }
+         */
+        val osObj  = element["os"].obj
+        val osName = osObj["name"].string
+        val osType = OSType.valueOf(osName.toUpperCase())
+        // Version field is optional.
+        return if(osObj.has("version")) {
+            val versionRegex = osObj["version"].string
+            OSRule(osType, Regex(versionRegex), allowed)
+        } else {
+            OSRule(osType, allowed)
+        }
     }
 }
